@@ -1,8 +1,16 @@
 <html>
 <head>
     <title>Dumper - Myo</title>
+    <script src="../chartjs/Chart.js"></script>
     <script src="../myojs-0.8.0.js"></script>
     <script>
+
+        // Chart.defaults.global.scaleOverride = true;
+        // Chart.defaults.global.scaleSteps = 100;
+        // Chart.defaults.global.scaleStepWidth = 10;
+        // Chart.defaults.global.scaleStartValue =
+        // Boolean - If we want to override with a hard coded scale
+
         var hub = new Myo.Hub();
 
         hub.on('ready', function() {
@@ -12,17 +20,53 @@
             console.log("connected!");
         });
         hub.on('frame', function(frame) {
-            document.getElementById('out').innerHTML = frame.rotation;
+            document.getElementById('out').innerHTML = frame.emg;
+            if (frame.emg.length > 0){
+                var data = {
+                    labels: ["1", "2", "3", "4", "5", "6", "7", "8"],
+                    datasets: [
+                        {
+                            label: "Some cool data",
+                            fillColor: "rgba(215, 69, 0, 1)",
+                            strokeColor: "rgba(220,220,220,0.8)",
+                            highlightFill: "rgba(220,220,220,0.75)",
+                            highlightStroke: "rgba(220,220,220,1)",
+                            data: frame.emg
+                        }
+                    ]
+                };
+
+                var options = {
+                    animation: false,
+                    scaleBeginAtZero: false,    
+                    scaleOverride: true,
+
+                    // ** Required if scaleOverride is true **
+                    // Number - The number of steps in a hard coded scale
+                    scaleSteps: 20,
+                    // Number - The value jump in the hard coded scale
+                    scaleStepWidth: 30,
+                    // Number - The scale starting value
+                    scaleStartValue: -300,
+                };
+
+                var ctx = document.getElementById("myChart").getContext("2d");
+                var myNewChart = new Chart(ctx).Radar(data, options);
+            }
         });
         hub.on('disconnect', function() {
             console.log("disconnect");
         });
+
+
+
     </script>
 </head>
 <body>
 <button onclick="hub.myo.vibrate(hub.myo.VIBRATION_LONG);">Vibrate</button>
   <pre>
     <div id="out"></div>
+    <canvas id="myChart" width="400" height="400"></canvas>
   </pre>
 </body>
 </html>
